@@ -56,12 +56,7 @@ window.switchTab = function(tabId) {
 };
 
 // --- FUNGSI LOGIN ---
-window.loginAsGuest = function() {
-    const guestUser = { email: "tamu@tahfidz.app", name: "Pengunjung", given_name: "Tamu", picture: "https://ui-avatars.com/api/?name=Tamu&background=E5E7EB&color=374151" };
-    localStorage.setItem('school_user', JSON.stringify(guestUser));
-    applyUserData(guestUser);
-    showNotify('success', 'Masuk sebagai Tamu');
-};
+// Fungsi Guest Login DIHAPUS
 
 window.onload = () => {
     if (typeof supabase !== 'undefined') {
@@ -402,7 +397,7 @@ window.generateLaporan = async function() {
 
     if (!halaqoh) return showNotify('error', 'Pilih Halaqoh terlebih dahulu!');
 
-    tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center"><div class="inline-block animate-spin mr-2">⟳</div> Menghitung...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center"><div class="inline-block animate-spin mr-2">⟳</div> Menghitung...</td></tr>';
 
     try {
         let mutabaahQuery = supabaseInstance.from('mutabaah').select('*').eq('halaqoh', halaqoh);
@@ -439,8 +434,10 @@ window.generateLaporan = async function() {
             reportData[s.nama] = {
                 nama: s.nama,
                 halaqoh: s.halaqoh,
-                pages: new Set(),
-                lastEntry: null,
+                ziyadahPages: new Set(),
+                murajaahPages: new Set(),
+                juziyyahPages: new Set(),
+                lastEntryZiyadah: null,
                 sakit: 0,
                 izin: 0,
                 alpa: 0,
@@ -451,7 +448,7 @@ window.generateLaporan = async function() {
 
         // Proses Absensi (S/I/A & Rata-rata)
         resAbsensi.data.forEach(row => {
-            if (!reportData[row.nama]) reportData[row.nama] = { nama: row.nama, halaqoh: row.halaqoh, pages: new Set(), lastEntry: null, sakit: 0, izin: 0, alpa: 0, totalNilai: 0, countNilai: 0 };
+            if (!reportData[row.nama]) reportData[row.nama] = { nama: row.nama, halaqoh: row.halaqoh, ziyadahPages: new Set(), murajaahPages: new Set(), juziyyahPages: new Set(), lastEntryZiyadah: null, sakit: 0, izin: 0, alpa: 0, totalNilai: 0, countNilai: 0 };
 
             if (row.status === 'Sakit') reportData[row.nama].sakit++;
             if (row.status === 'Izin') reportData[row.nama].izin++;
@@ -465,35 +462,46 @@ window.generateLaporan = async function() {
 
         // Proses Mutabaah (Pages & Last Entry)
         resMutabaah.data.forEach(row => {
-            if (!reportData[row.nama]) reportData[row.nama] = { nama: row.nama, halaqoh: row.halaqoh, pages: new Set(), lastEntry: null, sakit: 0, izin: 0, alpa: 0, totalNilai: 0, countNilai: 0 };
+            if (!reportData[row.nama]) reportData[row.nama] = { nama: row.nama, halaqoh: row.halaqoh, ziyadahPages: new Set(), murajaahPages: new Set(), juziyyahPages: new Set(), lastEntryZiyadah: null, sakit: 0, izin: 0, alpa: 0, totalNilai: 0, countNilai: 0 };
 
             const startPage = parseInt(row.dari_halaman);
             const endPage = parseInt(row.sampai_halaman);
 
-            if (!isNaN(startPage) && !isNaN(endPage)) {
-                for (let i = startPage; i <= endPage; i++) reportData[row.nama].pages.add(i);
-            } else if (!isNaN(startPage)) {
-                 reportData[row.nama].pages.add(startPage);
+            // Tentukan target set berdasarkan jenis mutabaah
+            let targetSet;
+            if (row.jenis_mutabaah === 'Ziyadah') targetSet = reportData[row.nama].ziyadahPages;
+            else if (row.jenis_mutabaah === 'Murajaah') targetSet = reportData[row.nama].murajaahPages;
+            else if (row.jenis_mutabaah === 'Juziyyah') targetSet = reportData[row.nama].juziyyahPages;
+
+            if (targetSet) {
+                 if (!isNaN(startPage) && !isNaN(endPage)) {
+                    for (let i = startPage; i <= endPage; i++) targetSet.add(i);
+                } else if (!isNaN(startPage)) {
+                     targetSet.add(startPage);
+                }
             }
 
-            const rowDate = new Date(row.created_at);
-            const currentLast = reportData[row.nama].lastEntry;
-            if (!currentLast || new Date(currentLast.created_at) < rowDate) {
-                reportData[row.nama].lastEntry = row;
+            // Update Last Entry HANYA jika jenisnya Ziyadah
+            if (row.jenis_mutabaah === 'Ziyadah') {
+                const rowDate = new Date(row.created_at);
+                const currentLast = reportData[row.nama].lastEntryZiyadah;
+                if (!currentLast || new Date(currentLast.created_at) < rowDate) {
+                    reportData[row.nama].lastEntryZiyadah = row;
+                }
             }
         });
 
         const rows = Object.values(reportData);
         if (rows.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400">Tidak ada data pada periode ini.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-gray-400">Tidak ada data pada periode ini.</td></tr>';
             return;
         }
 
         tbody.innerHTML = rows.map(r => {
             let lastPos = '-';
-            if (r.lastEntry) {
-                lastPos = `Hal ${r.lastEntry.sampai_halaman || '?'} : Baris ${r.lastEntry.sampai_baris || '?'}`;
-                lastPos += `<br><span class="text-[10px] text-gray-400">${formatTanggalIndo(r.lastEntry.tanggal)}</span>`;
+            if (r.lastEntryZiyadah) {
+                lastPos = `Hal ${r.lastEntryZiyadah.sampai_halaman || '?'} : Baris ${r.lastEntryZiyadah.sampai_baris || '?'}`;
+                lastPos += `<br><span class="text-[10px] text-gray-400">${formatTanggalIndo(r.lastEntryZiyadah.tanggal)}</span>`;
             }
 
             const avg = r.countNilai > 0 ? (r.totalNilai / r.countNilai).toFixed(1) : '-';
@@ -501,15 +509,25 @@ window.generateLaporan = async function() {
             return `
             <tr class="hover:bg-indigo-50/50 border-b last:border-0 transition-colors">
                 <td class="p-3 font-bold text-gray-800">${r.nama}</td>
+                <td class="p-3 text-center bg-indigo-50/30">
+                     <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">
+                        ${r.ziyadahPages.size}
+                    </span>
+                </td>
+                <td class="p-3 text-center">
+                    <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold">
+                        ${r.murajaahPages.size}
+                    </span>
+                </td>
+                <td class="p-3 text-center bg-indigo-50/30">
+                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">
+                        ${r.juziyyahPages.size}
+                    </span>
+                </td>
                 <td class="p-3 text-center text-yellow-600 font-bold">${r.sakit}</td>
                 <td class="p-3 text-center text-blue-600 font-bold">${r.izin}</td>
                 <td class="p-3 text-center text-red-600 font-bold">${r.alpa}</td>
                 <td class="p-3 text-center font-bold text-gray-700">${avg}</td>
-                <td class="p-3 text-center">
-                    <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold">
-                        ${r.pages.size} Hal
-                    </span>
-                </td>
                 <td class="p-3 text-sm text-gray-700 font-mono leading-tight">${lastPos}</td>
             </tr>
             `;
@@ -517,7 +535,7 @@ window.generateLaporan = async function() {
 
     } catch (e) {
         console.error(e);
-        tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-red-500">Gagal memuat laporan.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-red-500">Gagal memuat laporan.</td></tr>';
     }
 };
 
