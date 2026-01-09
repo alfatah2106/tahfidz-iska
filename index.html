@@ -46,14 +46,10 @@
                 <i data-lucide="lock" class="w-8 h-8"></i>
             </div>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Musyrif Login</h2>
+            <p class="text-gray-500 mb-6 text-sm">Silakan login menggunakan akun Google Anda.</p>
             <div id="google-btn-container" class="flex justify-center min-h-[40px]"></div>
-            <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div>
-                <div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-500">Atau</span></div>
-            </div>
-            <button onclick="loginAsGuest()" class="w-full py-2.5 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors flex items-center justify-center shadow-sm">
-                <i data-lucide="user" class="w-4 h-4 mr-2 text-gray-400"></i> Masuk sebagai Tamu
-            </button>
+
+            <!-- BUTTON GUEST DIHAPUS -->
         </div>
     </div>
 
@@ -98,8 +94,6 @@
             <button onclick="switchTab('laporan')" class="nav-btn w-full flex items-center p-2.5 rounded-lg text-sm text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors" data-tab="laporan">
                 <i data-lucide="bar-chart-3" class="mr-3 w-4 h-4"></i> Laporan
             </button>
-
-            <!-- Tab Data Santri DIHAPUS sesuai permintaan -->
         </nav>
 
         <div class="p-4 border-t border-gray-200 bg-gray-50">
@@ -184,7 +178,8 @@
                 </div>
                 <div id="mutabaah-list" class="space-y-4 pb-24"></div>
             </section>
-<!-- Jurnal Tab -->
+
+            <!-- Jurnal Tab -->
             <section id="tab-jurnal" class="tab-content p-4 md:p-8 w-full hidden-tab">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-emerald-100 mb-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -194,7 +189,7 @@
                         </button>
                     </div>
 
-                    <!-- Filter Section (BARU) -->
+                    <!-- Filter Section -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 bg-emerald-50 p-4 rounded-lg border border-emerald-100">
                         <div>
                             <label class="text-xs font-bold text-emerald-700 uppercase mb-1 block">Filter Halaqoh</label>
@@ -224,7 +219,7 @@
                 </div>
             </section>
 
-            <!-- Laporan Tab -->
+            <!-- Laporan Tab (UPDATED) -->
             <section id="tab-laporan" class="tab-content p-4 md:p-8 w-full hidden-tab">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-indigo-100 mb-6">
                     <h2 class="text-lg font-bold text-indigo-800 flex items-center mb-4"><i data-lucide="bar-chart-3" class="mr-2 w-5 h-5"></i> Laporan</h2>
@@ -246,12 +241,14 @@
                             <thead class="bg-indigo-50">
                                 <tr>
                                     <th class="p-3 text-left text-xs font-bold text-indigo-800 uppercase whitespace-nowrap">Nama</th>
+                                    <th class="p-3 text-center text-xs font-bold text-indigo-800 uppercase whitespace-nowrap bg-indigo-50">Ziyadah<br>(Hal)</th>
+                                    <th class="p-3 text-center text-xs font-bold text-indigo-800 uppercase whitespace-nowrap bg-indigo-50">Murajaah<br>(Hal)</th>
+                                    <th class="p-3 text-center text-xs font-bold text-indigo-800 uppercase whitespace-nowrap bg-indigo-50">Juziyyah<br>(Hal)</th>
                                     <th class="p-3 text-center text-xs font-bold text-indigo-800 uppercase whitespace-nowrap">S</th>
                                     <th class="p-3 text-center text-xs font-bold text-indigo-800 uppercase whitespace-nowrap">I</th>
                                     <th class="p-3 text-center text-xs font-bold text-indigo-800 uppercase whitespace-nowrap">A</th>
                                     <th class="p-3 text-center text-xs font-bold text-indigo-800 uppercase whitespace-nowrap">Rata-rata</th>
-                                    <th class="p-3 text-center text-xs font-bold text-indigo-800 uppercase whitespace-nowrap">Halaman Unik</th>
-                                    <th class="p-3 text-left text-xs font-bold text-indigo-800 uppercase whitespace-nowrap">Terakhir</th>
+                                    <th class="p-3 text-left text-xs font-bold text-indigo-800 uppercase whitespace-nowrap">Posisi Terakhir<br>(Ziyadah)</th>
                                 </tr>
                             </thead>
                             <tbody id="laporan-table-body" class="bg-white divide-y divide-gray-100"></tbody>
